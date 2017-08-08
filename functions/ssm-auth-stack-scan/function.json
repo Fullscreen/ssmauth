@@ -1,0 +1,12 @@
+{
+  "name": "ssm-auth-stack-update",
+  "description": "update users on target stack based on IAM group",
+  "runtime": "python2.7",
+  "handler": "main.lambda_handler",
+  "role": "TODO:YOURCOOLROLEHERE",
+  "memory": 512,
+  "timeout": 300,
+  "hooks": {
+    "build": "pip install --upgrade --force-reinstall -r requirements.txt"
+  }
+}

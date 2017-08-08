@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ssmauth v2.0
+
+Resources:
+
+  LambdaRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+              - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+        ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+        - "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaRole"
+        Path: "/"
+        Policies:
+          - PolicyName: Cloudformation
+            PolicyDocument:
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - cloudformation:ListStacks
+                    - cloudformation:DescribeStacks
+                  Resource: "*"
+
+  SSMAuthScanLambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+        Handler: "index.lambda_handler"
+        Runtime: "python2.7"
+        Role: !GetAtt "LambdaRole.Arn"
+        Timeout: 120
+        Environment:
+          Variables:
+            UpdateLambdaName: !Ref "SSMAuthUpdateLambdaFunction"
+        Code:
+          ZipFile: |
+            import boto3
+            import json
+            import logging
+            import os
+            logger = logging.getLogger()
+            logger.setLevel(logging.INFO)
+            def lambda_handler(event, context):
+              client = boto3.client('cloudformation')
+              lclient = boto3.client('lambda')
+              response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE','UPDATE_COMPLETE'])
+              logger.info("%s - %s", event, context)
+              for entry in response["StackSummaries"]:
+                stack = client.describe_stacks(StackName=entry["StackName"])
+                outputs = stack.get('Stacks')[0].get('Outputs')
+                if outputs is not None and len(outputs) > 0:
+                  for out in outputs:
+                    if out.get('OutputKey') == "OutputInstanceIAMGroup":
+                       json_params = {
+                       "stack_name": entry['StackName'],
+                       "iamgroup": out.get('OutputValue')
+                       }
+                       logger.info("Updating Stack:\t%s" % entry['StackName'])
+                       resp = lclient.invoke(
+                       FunctionName=os.environ['UpdateLambdaName'],
+                       InvocationType='Event',
+                       Payload=json.dumps(json_params)
+                       )
+            logger.info("Finished Scan of Stacks")
+
+  SSMAuthUpdateLambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+        Handler: "index.lambda_handler"
+        Runtime: "python2.7"
+        Role: !GetAtt "LambdaRole.Arn"
+        Timeout: 120
+        Code:
+          ZipFile: |
+            import boto3
+            import json
+            import logging
+            logger = logging.getLogger()
+            logger.setLevel(logging.INFO)
+            def lambda_handler(event, context):
+                logger.info("%s - %s", event, context)
+                ssmClient = boto3.client('ssm')
+                cmd_str = "/usr/local/bin/iam_user_sync.rb SiteReliabilityEngineers SecurityEngineers " + event['iamgroup']
+                response = ssmClient.send_command(
+                    DocumentName = 'AWS-RunShellScript',
+                    TimeoutSeconds = 240,
+                    Comment = 'SSMAuthManagment',
+                    Parameters = {
+                        'commands': [ cmd_str ]
+                    },
+                    Targets=[
+                            {
+                                'Key': 'tag:' + 'aws:cloudformation:stack-name',
+                                'Values': [event['stack_name'],]
+                            },
+                        ]
+                )
+                logger.info(response)
+
+  SSMLambdaScheduledRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+        Description: "ScheduledRule"
+        ScheduleExpression: "rate(10 minutes)"
+        State: "ENABLED"
+        Targets:
+          -
+            Arn:
+              Fn::GetAtt:
+                - "SSMAuthScanLambdaFunction"
+                - "Arn"
+            Id: "TargetFunctionV1"
