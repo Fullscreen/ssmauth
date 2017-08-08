@@ -118,3 +118,15 @@ Resources:
                 - "SSMAuthScanLambdaFunction"
                 - "Arn"
             Id: "TargetFunctionV1"
+
+  PermissionForEventsToInvokeLambda:
+        Type: "AWS::Lambda::Permission"
+        Properties:
+            FunctionName:
+              Ref: "SSMAuthScanLambdaFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn:
+              Fn::GetAtt:
+                - "SSMLambdaScheduledRule"
+                - "Arn"
