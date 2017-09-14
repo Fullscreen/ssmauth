@@ -51,7 +51,7 @@ Resources:
             def lambda_handler(event, context):
               client = boto3.client('cloudformation')
               lclient = boto3.client('lambda')
-              response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE','UPDATE_COMPLETE'])
+              response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE','UPDATE_COMPLETE','UPDATE_ROLLBACK_COMPLETE'])
               logger.info("%s - %s", event, context)
               for entry in response["StackSummaries"]:
                 stack = client.describe_stacks(StackName=entry["StackName"])
