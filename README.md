@@ -18,7 +18,7 @@ SSMAUTH provides a method of automating the creation and deletion of local users
 ## AMI Requirements
 - [iam-authorized-keys-command](https://github.com/Fullscreen/iam-authorized-keys-command)
 - [ssm-agent](https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent.html)
-- a [ruby](https://www.ruby-lang.org/en/) interpretur on the instances being managed
+- a [ruby](https://www.ruby-lang.org/en/) interpreter on the instances being managed
 - place the included ruby script in /usr/local/bin, and make it executible
 
 ## Todo
