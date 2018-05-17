@@ -1,5 +1,5 @@
 # ssmauth
-SSMAUTH is a method of automating the creation and deletion of local users on an EC2 instance associated with a cloudformation stack.  This project includes A Cloudformation template which will build 2 lambda functions to manage the automation.  It relies on AWS Cloudformation Output keys, IAM Groups, and IAM User SSH keys, AWS SSM, and a local ruby script deployed on each instance.
+SSMAUTH provides a method of automating the creation and deletion of local users on an EC2 instance associated with a AWS Cloudformation stack.  This project includes A Cloudformation Template which will build 2 lambda functions to manage the automation.  It relies on AWS Cloudformation Output keys, IAM Groups, IAM User SSH keys, AWS SSM, and a local ruby script deployed on each instance.
 
 ## Includes
 - CF Template
