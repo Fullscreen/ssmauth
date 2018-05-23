@@ -73,8 +73,9 @@ end
 # Remove any local users not present in valid IAM groups
 $local_current_users.each do |current_local_user|
   puts "Checking #{current_local_user}"  if DEBUG
-  if not $iam_current_users.include?(current_local_user.to_s.strip.downcase)
-    puts "#{current_local_user.to_s.strip} should not be here now... removing."
-    del_local_user(current_local_user.to_s.strip)
+  clean_local_user = current_local_user.to_s.strip.downcase
+  if not $iam_current_users.include?(clean_local_user)
+    puts "#{clean_local_user} should not be here now... removing."
+    del_local_user(clean_local_user)
   end
 end
