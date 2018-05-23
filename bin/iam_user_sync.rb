@@ -62,7 +62,7 @@ $iam_current_users.each do |valid_iam_user|
       puts "#{clean_iam_user} NOT found in local" if DEBUG
       add_local_user(clean_iam_user)
     else
-      puts "#{clean_iam_user} does not have a ssh key on file... Skipping" if DEBUG
+      puts "#{clean_iam_user} does not have a ssh key in IAM... Skipping" if DEBUG
       next
     end
   else
@@ -73,7 +73,7 @@ end
 # Remove any local users not present in valid IAM groups
 $local_current_users.each do |current_local_user|
   puts "Checking #{current_local_user}"  if DEBUG
-  if not $iam_current_users.include?(current_local_user.to_s.strip)
+  if not $iam_current_users.include?(current_local_user.to_s.strip.downcase)
     puts "#{current_local_user.to_s.strip} should not be here now... removing."
     del_local_user(current_local_user.to_s.strip)
   end
