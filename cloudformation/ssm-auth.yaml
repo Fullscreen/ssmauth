@@ -46,15 +46,17 @@ Resources:
             import json
             import logging
             import os
+            import time
             logger = logging.getLogger()
             logger.setLevel(logging.INFO)
+            client = boto3.client('cloudformation')
+            lclient = boto3.client('lambda')
             def lambda_handler(event, context):
-              client = boto3.client('cloudformation')
-              lclient = boto3.client('lambda')
               response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE','UPDATE_COMPLETE','UPDATE_ROLLBACK_COMPLETE'])
               logger.info("%s - %s", event, context)
               for entry in response["StackSummaries"]:
                 stack = client.describe_stacks(StackName=entry["StackName"])
+                time.sleep(0.5)
                 outputs = stack.get('Stacks')[0].get('Outputs')
                 if outputs is not None and len(outputs) > 0:
                   for out in outputs:
