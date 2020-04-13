@@ -1,7 +1,7 @@
 {
   "name": "ssm-auth-stack-update",
   "description": "update users on target stack based on IAM group",
-  "runtime": "python2.7",
+  "runtime": "python3.7",
   "handler": "main.lambda_handler",
   "role": "TODO:YOURCOOLROLEHERE",
   "memory": 512,
