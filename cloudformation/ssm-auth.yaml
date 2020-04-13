@@ -34,7 +34,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
         Handler: "index.lambda_handler"
-        Runtime: "python2.7"
+        Runtime: "python3.7"
         Role: !GetAtt "LambdaRole.Arn"
         Timeout: 120
         Environment:
@@ -77,7 +77,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
         Handler: "index.lambda_handler"
-        Runtime: "python2.7"
+        Runtime: "python3.7"
         Role: !GetAtt "LambdaRole.Arn"
         Timeout: 120
         Code:
